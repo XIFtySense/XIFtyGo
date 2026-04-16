@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xifty-go-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/XIFtyGo
+    steps:
+      - name: Check out binding repo
+        uses: actions/checkout@v4
+        with:
+          path: XIFtyGo
+
+      - name: Check out core repo
+        uses: actions/checkout@v4
+        with:
+          repository: XIFtySense/XIFty
+          path: XIFty
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            XIFty -> target
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build core FFI library
+        run: cargo build -p xifty-ffi --manifest-path ../XIFty/Cargo.toml
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Run example
+        run: go run ./examples/basic_usage
