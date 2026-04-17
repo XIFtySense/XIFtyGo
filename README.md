@@ -28,12 +28,24 @@ go run ./examples/basic_usage
 If your core checkout lives elsewhere, set both `XIFTY_CORE_DIR` and
 `LD_LIBRARY_PATH` to point at it.
 
+When you are consuming a tagged public release, the module path is:
+
+```bash
+go get github.com/XIFtySense/XIFtyGo@latest
+```
+
 ## Status
 
 - source-first and usable today
 - built on the stable `xifty-ffi` ABI
 - CI validates the wrapper against the public XIFty core repo on every push
 - prepared for future module-distribution hardening
+
+## Release Model
+
+- Go modules are distributed through semver git tags
+- v0 releases are the right default until the API settles
+- consumers should install tagged versions rather than tracking random commits
 
 ## License
 
