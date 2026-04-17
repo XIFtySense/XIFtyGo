@@ -2,7 +2,7 @@ package xifty
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/internal/include
-#cgo LDFLAGS: -L${SRCDIR}/../XIFty/target/debug -lxifty_ffi
+#cgo LDFLAGS: -L${SRCDIR}/.xifty-core/target/debug -lxifty_ffi
 #include "xifty.h"
 #include <stdlib.h>
 */
@@ -57,6 +57,23 @@ func decodeResult(result C.XiftyResult) (map[string]any, error) {
 		return nil, err
 	}
 	return parsed, nil
+}
+
+func ExtractNamed(path string, view string) (map[string]any, error) {
+	switch view {
+	case "full":
+		return Extract(path, ViewFull)
+	case "raw":
+		return Extract(path, ViewRaw)
+	case "interpreted":
+		return Extract(path, ViewInterpreted)
+	case "normalized":
+		return Extract(path, ViewNormalized)
+	case "report":
+		return Extract(path, ViewReport)
+	default:
+		return nil, fmt.Errorf("unsupported view: %s", view)
+	}
 }
 
 func bufferString(buffer C.XiftyBuffer) string {

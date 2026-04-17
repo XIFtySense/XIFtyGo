@@ -25,18 +25,12 @@ jobs:
       run:
         working-directory: ${{ github.workspace }}/XIFtyGo
     env:
-      LD_LIBRARY_PATH: ${{ github.workspace }}/XIFty/target/debug
+      LD_LIBRARY_PATH: ${{ github.workspace }}/XIFtyGo/.xifty-core/target/debug
     steps:
       - name: Check out binding repo
         uses: actions/checkout@v5
         with:
           path: XIFtyGo
-
-      - name: Check out core repo
-        uses: actions/checkout@v5
-        with:
-          repository: XIFtySense/XIFty
-          path: XIFty
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -45,7 +39,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            XIFty -> target
+            XIFtyGo/.xifty-core -> target
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -53,11 +47,13 @@ jobs:
           go-version: "1.24"
           cache: false
 
-      - name: Build core FFI library
-        run: cargo build -p xifty-ffi --manifest-path ../XIFty/Cargo.toml
+      - name: Prepare core
+        run: bash scripts/prepare-core.sh
 
       - name: Run tests
         run: go test ./...
 
-      - name: Run example
-        run: go run ./examples/basic_usage
+      - name: Run examples
+        run: |
+          go run ./examples/basic_usage
+          go run ./examples/gallery_ingest

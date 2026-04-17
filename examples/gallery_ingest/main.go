@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"path/filepath"
 
@@ -23,15 +22,20 @@ func main() {
 		fields[field["field"].(string)] = value["value"]
 	}
 
-	fmt.Println("XIFty version:", xifty.Version())
-	fmt.Println("Detected format:", output["input"].(map[string]any)["detected_format"])
-	fmt.Printf("Camera: %v %v\n", fields["device.make"], fields["device.model"])
-	fmt.Println("Captured at:", fields["captured_at"])
-	fmt.Printf("Dimensions: %vx%v\n", fields["dimensions.width"], fields["dimensions.height"])
+	asset := map[string]any{
+		"sourcePath":  fixture,
+		"format":      output["input"].(map[string]any)["detected_format"],
+		"capturedAt":  fields["captured_at"],
+		"cameraMake":  fields["device.make"],
+		"cameraModel": fields["device.model"],
+		"width":       fields["dimensions.width"],
+		"height":      fields["dimensions.height"],
+		"software":    fields["software"],
+	}
 
-	encoded, err := json.MarshalIndent(output, "", "  ")
+	encoded, err := json.MarshalIndent(asset, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(encoded))
+	println(string(encoded))
 }

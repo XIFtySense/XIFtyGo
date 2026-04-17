@@ -1,51 +1,84 @@
-# XIFtyGo
+# XIFty for Go
 
-Go binding for [XIFty](https://github.com/XIFtySense/XIFty).
+`XIFtyGo` is the official Go binding repo for XIFty.
 
-`XIFtyGo` is a focused `cgo` wrapper over the stable `xifty-ffi` C ABI. It is
-ready for source-based use today and is intended to become the canonical Go
-package for XIFty.
+It gives Go applications a focused `cgo` bridge into the XIFty metadata engine
+so you can probe files and extract stable metadata views without shelling out to
+external tools.
 
-## What You Get
+## What It Does
 
-- `Version()` for the bound core version
-- `Probe(path)` for format detection and structural inspection
-- `Extract(path, view)` for the same JSON views exposed by the core engine
-- a thin wrapper with no metadata logic duplicated in Go
+XIFty exposes four complementary metadata views:
 
-## Quickstart
+- `raw`
+- `interpreted`
+- `normalized`
+- `report`
 
-Clone the public core repo as a sibling checkout, then build the FFI library and
-run the wrapper:
+This Go binding keeps those views intact and adds only a thin Go API surface.
+
+## Quick Example
+
+```go
+output, err := xifty.Extract("photo.jpg", xifty.ViewNormalized)
+if err != nil {
+    panic(err)
+}
+
+fields := map[string]any{}
+for _, fieldAny := range output["normalized"].(map[string]any)["fields"].([]any) {
+    field := fieldAny.(map[string]any)
+    fields[field["field"].(string)] = field["value"].(map[string]any)["value"]
+}
+
+fmt.Println(fields["device.make"])
+fmt.Println(fields["captured_at"])
+```
+
+## API
+
+- `Version()`
+- `Probe(path string)`
+- `Extract(path string, view ViewMode)`
+- `ExtractNamed(path string, view string)`
+
+## Why Use It
+
+Use this binding when you want:
+
+- native Go access to XIFty
+- normalized metadata fields for application logic
+- raw and interpreted metadata when provenance matters
+- explicit error surfaces rather than lossy wrapper logic
+
+Good fits include ingestion services, media pipelines, and upload-time metadata
+inspection.
+
+## Local Setup
+
+This repo no longer assumes a sibling `../XIFty` checkout.
+
+Prepare the core dependency into a repo-local cache:
 
 ```bash
-git clone git@github.com:XIFtySense/XIFty.git ../XIFty
-cargo build -p xifty-ffi --manifest-path ../XIFty/Cargo.toml
+bash scripts/prepare-core.sh
+```
+
+Then run the wrapper:
+
+```bash
 go test ./...
 go run ./examples/basic_usage
+go run ./examples/gallery_ingest
 ```
 
-If your core checkout lives elsewhere, set both `XIFTY_CORE_DIR` and
-`LD_LIBRARY_PATH` to point at it.
-
-When you are consuming a tagged public release, the module path is:
-
-```bash
-go get github.com/XIFtySense/XIFtyGo@latest
-```
+You can still override the core location explicitly with `XIFTY_CORE_DIR`.
 
 ## Status
 
 - source-first and usable today
 - built on the stable `xifty-ffi` ABI
-- CI validates the wrapper against the public XIFty core repo on every push
-- prepared for future module-distribution hardening
-
-## Release Model
-
-- Go modules are distributed through semver git tags
-- v0 releases are the right default until the API settles
-- consumers should install tagged versions rather than tracking random commits
+- CI validates the wrapper against the public XIFty core repo
 
 ## License
 
