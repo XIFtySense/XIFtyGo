@@ -74,9 +74,14 @@ go run ./examples/gallery_ingest
 
 You can still override the core location explicitly with `XIFTY_CORE_DIR`.
 
+This binding is intentionally still source-first. It is not yet on the newer
+canonical runtime-artifact path used by the Python and Rust package hardening
+work.
+
 ## Status
 
 - source-first and usable today
+- not yet on the canonical runtime-artifact packaging path
 - built on the stable `xifty-ffi` ABI
 - CI validates the wrapper against the public XIFty core repo
 
